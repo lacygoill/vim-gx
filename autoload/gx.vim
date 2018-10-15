@@ -53,8 +53,7 @@ fu! gx#open(in_term, ...) abort "{{{2
             "
             "                                    The backslash is there to tell it's a semantic space.
         else
-            exe 'sil !xdg-open '.shellescape(url, 1)
-            redraw!
+            sil call system('xdg-open '.shellescape(url))
         endif
     endif
 endfu
