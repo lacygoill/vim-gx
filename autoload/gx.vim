@@ -21,7 +21,7 @@ fu! gx#open(in_term, ...) abort "{{{2
         endif
         let ext = fnamemodify(url, ':e')
         let cmd = get({'pdf': 'zathura'}, ext, 'xdg-open')
-        call system(cmd.' '.url.' &')
+        sil call system(cmd.' '.url.' &')
     else
         if a:in_term
             " We could pass the shell command we want to execute directly to
