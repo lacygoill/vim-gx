@@ -84,7 +84,15 @@ fu! s:get_url() abort "{{{2
             let url = substitute(url, '\v.{-}\ze%(http|ftp|www)', '', '')
 
             " remove everything after the first `⟩`, `>`, `)`, `]`, `}`
-            let url = substitute(url, '\v.{-}\zs[⟩>)\]}].*', '', '')
+            " but some wikipedia links contain parentheses:{{{
+            "
+            "         https://en.wikipedia.org/wiki/Daemon_(computing)
+            "
+            " In those cases,  we need to make an exception,  and not remove the
+            " text after the closing parenthesis.
+            "}}}
+            let chars = match(url, '(') ==# -1 ? '[⟩>)\]}]' : '[⟩>\]}]'
+            let url = substitute(url, '\v.{-}\zs' . chars . '.*', '', '')
 
             " remove everything after the last `"`
             return substitute(url, '\v".*', '', '')
