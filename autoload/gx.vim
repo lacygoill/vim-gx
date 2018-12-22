@@ -116,9 +116,7 @@ fu! s:get_url() abort "{{{2
             elseif url =~# '^\[.\{-}\](.\{-})'
                 let url = matchstr(url, '^\[.\{-}\](\zs.*\ze)$')
                 let url = substitute(url, '\s*".\{-}"\s*$', '', '')
-                return url =~# '\.pdf$'
-                \ ?        ''
-                \ :        url
+                return url
             else
                 return ''
             endif
