@@ -26,25 +26,28 @@ fu! gx#open(in_term, ...) abort "{{{2
         sil call system(cmd)
     else
         if a:in_term
-            " We could pass the shell command we want to execute directly to
-            " `tmux split-window`, but the pane would be closed immediately.
-            " Because by default, tmux closes a window/pane whose shell command
-            " has completed:
-            "         When the shell command completes, the window closes.
-            "         See the remain-on-exit option to change this behaviour.
+            " Could we pass the shell command to `$ tmux split-window` directly?{{{
             "
-            " For more info, see `man tmux`, and search:
+            " Yes but the pane would be closed immediately.
+            " Because by default, tmux closes  a window/pane whose shell command
+            " has completed:
+            "
+            " > When the shell command completes, the window closes.
+            " > See the remain-on-exit option to change this behaviour.
+            "
+            " For more info, see `$ man tmux`, and search:
             "
             "     new-window
             "     split-window
             "     respawn-pane
             "     set-remain-on-exit
+            "}}}
             sil call system('tmux split-window -c '.$XDG_RUNTIME_VIM')
             " maximize the pane
             sil call system('tmux resize-pane -Z')
             " start `w3m`
             sil call system('tmux send-keys web \ '.shellescape(url).' Enter')
-            "                                    │
+            "                                    │{{{
             "                                    └─ without the backslash, `tmux` would think
             "                                    it's a space to separate the arguments of the
             "                                    `send-keys` command; therefore, it would remove it
@@ -54,27 +57,18 @@ fu! gx#open(in_term, ...) abort "{{{2
             "                                                web url
             "
             "                                    The backslash is there to tell it's a semantic space.
+            "}}}
         else
             sil call system('xdg-open '.shellescape(url))
         endif
     endif
 endfu
 " }}}1
-" Util {{{1
+" Core {{{1
 fu! s:get_url() abort "{{{2
     " https://github.com/junegunn/vim-plug/wiki/extra
     if &filetype is# 'vim-plug'
-        let line = getline('.')
-        let sha  = matchstr(line, '^  \X*\zs\x\{7}\ze ')
-        let name = empty(sha) ? matchstr(line, '^[-x+] \zs[^:]\+\ze:')
-        \ : getline(search('^- .*:$', 'bn'))[2:-2]
-        let uri  = get(get(g:plugs, name, {}), 'uri', '')
-        if uri !~ 'github.com'
-            return ''
-        endif
-        let repo = matchstr(uri, '[^:/]*/'.name)
-        return empty(sha) ? 'https://github.com/'.repo
-            \ : printf('https://github.com/%s/commit/%s', repo, sha)
+        return s:get_url_vim_plug()
     endif
 
     let line = getline('.')
@@ -101,42 +95,60 @@ fu! s:get_url() abort "{{{2
     call setpos('.', pos)
 
     if exists('url')
-        " [text](link)
-        if matchstr(line, '\%'.col_start_url.'c.') is# '('
-            " This is [an example](http://example.com/ "Title") inline link.
-            let url = substitute(url, '\s*".\{-}"\s*$', '', '')
-            return url
-
-        " [text][ref]
-        else
-            " Visit [Daring Fireball][] for more information.
-            " [Daring Fireball]: http://daringfireball.net/
-            if url is# ''
-                let ref = matchstr(line, '\%'.(col_start_link+1).'c.*\%'.(col_start_url-1).'c')
-            else
-                let ref = url
-            endif
-            if &filetype is# 'markdown'
-                let cml = ''
-            else
-                let cml = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\m'
-            endif
-            let url = filter(getline('.', '$'),
-                \ {i,v -> v =~# '^\s*'.cml.'\s*\c\V['.ref.']:'})
-            let url = matchstr(get(url, 0, ''), '\[.\{-}\]:\s*\zs.*')
-            " [foo]: http://example.com/  "Optional Title Here"
-            " [foo]: http://example.com/  'Optional Title Here'
-            " [foo]: http://example.com/  (Optional Title Here)
-            let pat = '\s*\(["'']\).\{-}\1\s*$'
-            let pat .= '\|\s*(.\{-})\s*$'
-            let url = substitute(url, pat, '', '')
-            " [id]: <http://example.com/>  "Optional Title Here"
-            let url = substitute(url, '^<\|>$', '', 'g')
-            return url
-        endif
+        let arg = {
+            \ 'line': line,
+            \ 'url': url,
+            \ 'col_start_link': col_start_link,
+            \ 'col_start_url': col_start_url,
+            \ 'col_end_url': col_end_url,
+            \ }
+        return s:get_url_markdown_style(arg)
+    else
+        return s:get_url_regular()
     endif
+endfu
 
-    " regular link
+fu! s:get_url_markdown_style(arg) abort "{{{2
+    let line = a:arg.line
+    let url = a:arg.url
+    let col_start_link = a:arg.col_start_link
+    let col_start_url = a:arg.col_start_url
+    let col_end_url = a:arg.col_end_url
+    " [text](link)
+    if matchstr(line, '\%'.col_start_url.'c.') is# '('
+        " This is [an example](http://example.com/ "Title") inline link.
+        let url = substitute(url, '\s*".\{-}"\s*$', '', '')
+
+    " [text][ref]
+    else
+        " Visit [Daring Fireball][] for more information.
+        " [Daring Fireball]: http://daringfireball.net/
+        if url is# ''
+            let ref = matchstr(line, '\%'.(col_start_link+1).'c.*\%'.(col_start_url-1).'c')
+        else
+            let ref = url
+        endif
+        if &filetype is# 'markdown'
+            let cml = ''
+        else
+            let cml = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\m'
+        endif
+        let url = filter(getline('.', '$'),
+            \ {i,v -> v =~# '^\s*'.cml.'\s*\c\V['.ref.']:'})
+        let url = matchstr(get(url, 0, ''), '\[.\{-}\]:\s*\zs.*')
+        " [foo]: http://example.com/  "Optional Title Here"
+        " [foo]: http://example.com/  'Optional Title Here'
+        " [foo]: http://example.com/  (Optional Title Here)
+        let pat = '\s*\(["'']\).\{-}\1\s*$'
+        let pat .= '\|\s*(.\{-})\s*$'
+        let url = substitute(url, pat, '', '')
+        " [id]: <http://example.com/>  "Optional Title Here"
+        let url = substitute(url, '^<\|>$', '', 'g')
+    endif
+    return url
+endfu
+
+fu! s:get_url_regular() abort "{{{2
     let url = expand('<cWORD>')
     let pat = '\%(https\=\|ftps\=\|www\)://'
     if url !~# pat
@@ -163,5 +175,19 @@ fu! s:get_url() abort "{{{2
     " remove everything after the last `"`
     let url = substitute(url, '\v".*', '', '')
     return url
+endfu
+
+fu! s:get_url_vim_plug() abort "{{{2
+    let line = getline('.')
+    let sha  = matchstr(line, '^  \X*\zs\x\{7}\ze ')
+    let name = empty(sha) ? matchstr(line, '^[-x+] \zs[^:]\+\ze:')
+    \ : getline(search('^- .*:$', 'bn'))[2:-2]
+    let uri  = get(get(g:plugs, name, {}), 'uri', '')
+    if uri !~ 'github.com'
+        return ''
+    endif
+    let repo = matchstr(uri, '[^:/]*/'.name)
+    return empty(sha) ? 'https://github.com/'.repo
+        \ : printf('https://github.com/%s/commit/%s', repo, sha)
 endfu
 
