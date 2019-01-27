@@ -58,15 +58,18 @@ fu! gx#open(in_term, ...) abort "{{{2
             " start `w3m`
             sil call system('tmux send-keys web \ '.shellescape(url).' Enter')
             "                                    │{{{
-            "                                    └─ without the backslash, `tmux` would think
-            "                                    it's a space to separate the arguments of the
-            "                                    `send-keys` command; therefore, it would remove it
-            "                                    and type:
-            "                                                weburl
-            "                                    instead of:
-            "                                                web url
+            "                                    └ without the backslash,
             "
-            "                                    The backslash is there to tell it's a semantic space.
+            " `tmux` would think  it's a space to separate the  arguments of the
+            " `send-keys` command; therefore, it would remove it and type:
+            "
+            "             weburl
+            "
+            " instead of:
+            "
+            "             web url
+            "
+            " The backslash is there to tell it's a semantic space.
             "}}}
         else
             sil call system('xdg-open '.shellescape(url))
