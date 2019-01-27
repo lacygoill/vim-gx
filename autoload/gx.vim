@@ -15,8 +15,12 @@ fu! gx#open(in_term, ...) abort "{{{2
 
     " [some book](~/Dropbox/ebooks/Later/Algo To Live By.pdf)
     if match(url, '^\%(https\=\|ftps\=\|www\)://') ==# -1
-        " expand a possible tilde in the path to a local file
-        let url = expand(url)
+        " Don't use `expand()`!{{{
+        "
+        " We don't want  something like `#` to be replaced with  the path to the
+        " alternate file.
+        "}}}
+        let url = substitute(url, '^\~', $HOME, '')
         if !filereadable(url)
             return
         endif
