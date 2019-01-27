@@ -17,8 +17,14 @@ fu! gx#open(in_term, ...) abort "{{{2
     if match(url, '^\%(https\=\|ftps\=\|www\)://') ==# -1
         " Don't use `expand()`!{{{
         "
-        " We don't want  something like `#` to be replaced with  the path to the
-        " alternate file.
+        " We don't want something like `#anchor` to be replaced with the path to
+        " the alternate file.
+        "
+        " We could also do sth like:
+        "
+        "     let url = expand(fnameescape(url))
+        "
+        " Not sure whether it's totally equivalent though...
         "}}}
         let url = substitute(url, '^\~', $HOME, '')
         if !filereadable(url)
