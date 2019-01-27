@@ -13,7 +13,8 @@ fu! gx#open(in_term, ...) abort "{{{2
         return
     endif
 
-    if match(url, '\v^%(https?|ftp|www)') ==# -1
+    " [some book](~/Dropbox/ebooks/Later/Algo To Live By.pdf)
+    if match(url, '^\%(https\=\|ftps\=\|www\)://') ==# -1
         " expand a possible tilde in the path to a local file
         let url = expand(url)
         if !filereadable(url)
@@ -21,7 +22,8 @@ fu! gx#open(in_term, ...) abort "{{{2
         endif
         let ext = fnamemodify(url, ':e')
         let cmd = get({'pdf': 'zathura'}, ext, 'xdg-open')
-        sil call system(cmd.' '.url.' &')
+        let cmd = cmd.' '.shellescape(url).' &'
+        sil call system(cmd)
     else
         if a:in_term
             " We could pass the shell command we want to execute directly to
@@ -57,11 +59,11 @@ fu! gx#open(in_term, ...) abort "{{{2
         endif
     endif
 endfu
-
+" }}}1
 " Util {{{1
 fu! s:get_url() abort "{{{2
     " https://github.com/junegunn/vim-plug/wiki/extra
-    if &ft is# 'vim-plug'
+    if &filetype is# 'vim-plug'
         let line = getline('.')
         let sha  = matchstr(line, '^  \X*\zs\x\{7}\ze ')
         let name = empty(sha) ? matchstr(line, '^[-x+] \zs[^:]\+\ze:')
@@ -72,55 +74,91 @@ fu! s:get_url() abort "{{{2
         endif
         let repo = matchstr(uri, '[^:/]*/'.name)
         return empty(sha) ? 'https://github.com/'.repo
-        \ : printf('https://github.com/%s/commit/%s', repo, sha)
+            \ : printf('https://github.com/%s/commit/%s', repo, sha)
+    endif
 
-    else
-        let url = expand('<cWORD>')
-        if url =~# 'http\|ftp\|www'
-            " Which characters make a URL invalid?
-            " https://stackoverflow.com/a/13500078
+    let line = getline('.')
+    let pos = getcurpos()
+    " [text](link)
+    let pat = '\[.\{-}\]'
+    let pat .= '\%((.\{-})\|\[.\{-}\]\)'
+    let g = 0
+    norm! 1|
+    while search(pat, 'W', line('.')) && g < 100
+        let col_start_link = col('.')
+        norm! %l
+        let col_start_url = col('.')
+        norm! %
+        let col_end_url = col('.')
+        if pos[2] >= col_start_link && pos[2] <= col_end_url
+            let url = matchstr(line, '\%'.(col_start_url+1).'c.*\%'.col_end_url.'c')
+            break
+        endif
+        let g += 1
+    endwhile
+    call setpos('.', pos)
 
-            " remove everything before the first `http`, `ftp` or `www`
-            let url = substitute(url, '\v.{-}\ze%(http|ftp|www)', '', '')
+    if exists('url')
+        " [text](link)
+        if matchstr(line, '\%'.col_start_url.'c.') is# '('
+            " This is [an example](http://example.com/ "Title") inline link.
+            let url = substitute(url, '\s*".\{-}"\s*$', '', '')
+            return url
 
-            " remove everything after the first `⟩`, `>`, `)`, `]`, `}`
-            " but some wikipedia links contain parentheses:{{{
-            "
-            "         https://en.wikipedia.org/wiki/Daemon_(computing)
-            "
-            " In those cases,  we need to make an exception,  and not remove the
-            " text after the closing parenthesis.
-            "}}}
-            let chars = match(url, '(') ==# -1 ? '[⟩>)\]}]' : '[⟩>\]}]'
-            let url = substitute(url, '\v.{-}\zs' . chars . '.*', '', '')
-
-            " remove everything after the last `"`
-            return substitute(url, '\v".*', '', '')
-
+        " [text][ref]
         else
-            " [text][ref]
-            " [text](link)
-            let pat  = '\[\=.*\%'.col('.').'c.*\]\&\[.\{-}\]'
-            let pat .= '\%((.\{-})\|\[.\{-}\]\)'
-            let url = matchstr(getline('.'), pat)
-
-            " [text][ref]
-            if url =~# '^\[.\{-}\]\[.\{-}\]'
-                let url = matchstr(url, '^\[.\{-}\]\zs\[.\{-}\]$')
-                let url = filter(getline(line('.'), '$'), {i,v -> v =~# '^\c\V'.url.':'})
-                let url = matchstr(get(url, 0, ''), '\[.\{-}\]:\s*\zs.*')
-                return substitute(url, '\s*".\{-}"\s*$', '', '')
-
-            " [text](link)
-            " [text](path_to_local_file)
-            elseif url =~# '^\[.\{-}\](.\{-})'
-                let url = matchstr(url, '^\[.\{-}\](\zs.*\ze)$')
-                let url = substitute(url, '\s*".\{-}"\s*$', '', '')
-                return url
+            " Visit [Daring Fireball][] for more information.
+            " [Daring Fireball]: http://daringfireball.net/
+            if url is# ''
+                let ref = matchstr(line, '\%'.(col_start_link+1).'c.*\%'.(col_start_url-1).'c')
             else
-                return ''
+                let ref = url
             endif
+            if &filetype is# 'markdown'
+                let cml = ''
+            else
+                let cml = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\m'
+            endif
+            let url = filter(getline('.', '$'),
+                \ {i,v -> v =~# '^\s*'.cml.'\s*\c\V['.ref.']:'})
+            let url = matchstr(get(url, 0, ''), '\[.\{-}\]:\s*\zs.*')
+            " [foo]: http://example.com/  "Optional Title Here"
+            " [foo]: http://example.com/  'Optional Title Here'
+            " [foo]: http://example.com/  (Optional Title Here)
+            let pat = '\s*\(["'']\).\{-}\1\s*$'
+            let pat .= '\|\s*(.\{-})\s*$'
+            let url = substitute(url, pat, '', '')
+            " [id]: <http://example.com/>  "Optional Title Here"
+            let url = substitute(url, '^<\|>$', '', 'g')
+            return url
         endif
     endif
+
+    let url = expand('<cWORD>')
+    let pat = '\%(https\=\|ftps\=\|www\)://'
+    if url !~# pat
+        return ''
+    endif
+
+    " Which characters make a URL invalid?
+    " https://stackoverflow.com/a/13500078
+
+    " remove everything before the first `http`, `ftp` or `www`
+    let url = substitute(url, '.\{-}\ze'.pat, '', '')
+
+    " remove everything after the first `⟩`, `>`, `)`, `]`, `}`
+    " but some wikipedia links contain parentheses:{{{
+    "
+    "         https://en.wikipedia.org/wiki/Daemon_(computing)
+    "
+    " In those cases,  we need to make an exception,  and not remove the
+    " text after the closing parenthesis.
+    "}}}
+    let chars = match(url, '(') ==# -1 ? '[⟩>)\]}]' : '[⟩>\]}]'
+    let url = substitute(url, '\v.{-}\zs' . chars . '.*', '', '')
+
+    " remove everything after the last `"`
+    let url = substitute(url, '\v".*', '', '')
+    return url
 endfu
 
