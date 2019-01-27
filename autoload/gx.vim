@@ -80,11 +80,12 @@ fu! s:get_url() abort "{{{2
     let line = getline('.')
     let pos = getcurpos()
     " [text](link)
-    let pat = '\[.\{-}\]'
+    let pat = '!\=\[.\{-}\]'
     let pat .= '\%((.\{-})\|\[.\{-}\]\)'
     let g = 0
     norm! 1|
-    while search(pat, 'W', line('.')) && g < 100
+    let flags = 'cW'
+    while search(pat, flags, line('.')) && g < 100
         let col_start_link = col('.')
         norm! %l
         let col_start_url = col('.')
@@ -95,6 +96,7 @@ fu! s:get_url() abort "{{{2
             break
         endif
         let g += 1
+        let flags = 'W'
     endwhile
     call setpos('.', pos)
 
