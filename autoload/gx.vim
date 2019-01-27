@@ -134,6 +134,7 @@ fu! s:get_url() abort "{{{2
         endif
     endif
 
+    " regular link
     let url = expand('<cWORD>')
     let pat = '\%(https\=\|ftps\=\|www\)://'
     if url !~# pat
