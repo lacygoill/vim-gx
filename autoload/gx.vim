@@ -174,7 +174,7 @@ fu! s:get_url_regular() abort "{{{2
     " remove everything before the first `http`, `ftp` or `www`
     let url = substitute(url, '.\{-}\ze'.pat, '', '')
 
-    " remove everything after the first `⟩`, `>`, `)`, `]`, `}`
+    " remove everything after the first `⟩`, `>`, `)`, `]`, `}`, backtick
     " but some wikipedia links contain parentheses:{{{
     "
     "         https://en.wikipedia.org/wiki/Daemon_(computing)
@@ -182,7 +182,7 @@ fu! s:get_url_regular() abort "{{{2
     " In those cases,  we need to make an exception,  and not remove the
     " text after the closing parenthesis.
     "}}}
-    let chars = match(url, '(') ==# -1 ? '[⟩>)\]}]' : '[⟩>\]}]'
+    let chars = match(url, '(') ==# -1 ? '[]⟩>)}`]' : '[]⟩>}`]'
     let url = substitute(url, '\v.{-}\zs' . chars . '.*', '', '')
 
     " remove everything after the last `"`
