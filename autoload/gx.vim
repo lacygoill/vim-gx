@@ -152,8 +152,8 @@ fu! s:get_url_markdown_style(arg) abort "{{{2
         " [foo]: http://example.com/  "Optional Title Here"
         " [foo]: http://example.com/  'Optional Title Here'
         " [foo]: http://example.com/  (Optional Title Here)
-        let pat = '\s*\(["'']\).\{-}\1\s*$'
-        let pat .= '\|\s*(.\{-})\s*$'
+        let pat = '\s\+\(["'']\).\{-}\1\s*$'
+        let pat .= '\|\s\+(.\{-})\s*$'
         let url = substitute(url, pat, '', '')
         " [id]: <http://example.com/>  "Optional Title Here"
         let url = substitute(url, '^<\|>$', '', 'g')
