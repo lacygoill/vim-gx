@@ -147,7 +147,7 @@ fu! s:get_url_markdown_style(arg) abort "{{{2
             let cml = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\m'
         endif
         let url = filter(getline('.', '$'),
-            \ {i,v -> v =~# '^\s*'.cml.'\s*\c\V['.ref.']:'})
+            \ {_,v -> v =~# '^\s*'.cml.'\s*\c\V['.ref.']:'})
         let url = matchstr(get(url, 0, ''), '\[.\{-}\]:\s*\zs.*')
         " [foo]: http://example.com/  "Optional Title Here"
         " [foo]: http://example.com/  'Optional Title Here'
