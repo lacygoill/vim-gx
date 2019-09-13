@@ -45,7 +45,7 @@ fu! gx#open(in_term, ...) abort "{{{2
             " > When the shell command completes, the window closes.
             " > See the remain-on-exit option to change this behaviour.
             "
-            " For more info, see `$ man tmux`, and search:
+            " For more info, see `man tmux`, and search:
             "
             "     new-window
             "     split-window
