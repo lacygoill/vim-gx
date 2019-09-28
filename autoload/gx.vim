@@ -1,3 +1,10 @@
+if exists('g:autoloaded_gx')
+    finish
+endif
+let g:autoloaded_gx = 1
+
+let s:DIR = getenv('XDG_RUNTIME_VIM') == v:null ? '/tmp' : $XDG_RUNTIME_VIM
+
 " Interface {{{1
 fu! gx#open(in_term, ...) abort "{{{2
     if a:0
@@ -32,7 +39,7 @@ fu! gx#open(in_term, ...) abort "{{{2
         endif
         let ext = fnamemodify(url, ':e')
         let cmd = get({'pdf': 'zathura'}, ext, 'xdg-open')
-        let cmd = cmd.' '.shellescape(url).' &'
+        let cmd = cmd..' '..shellescape(url)..' &'
         sil call system(cmd)
     else
         if a:in_term
@@ -52,11 +59,11 @@ fu! gx#open(in_term, ...) abort "{{{2
             "     respawn-pane
             "     set-remain-on-exit
             "}}}
-            sil call system('tmux split-window -c '.$XDG_RUNTIME_VIM')
+            sil call system('tmux split-window -c '..s:DIR)
             " maximize the pane
             sil call system('tmux resize-pane -Z')
             " start `w3m`
-            sil call system('tmux send-keys web \ '.shellescape(url).' Enter')
+            sil call system('tmux send-keys web \ '..shellescape(url)..' Enter')
             "                                    │{{{
             "                                    └ without the backslash,
             "
@@ -72,7 +79,7 @@ fu! gx#open(in_term, ...) abort "{{{2
             " The backslash is there to tell it's a semantic space.
             "}}}
         else
-            sil call system('xdg-open '.shellescape(url))
+            sil call system('xdg-open '..shellescape(url))
         endif
     endif
 endfu
@@ -99,7 +106,7 @@ fu! s:get_url() abort "{{{2
         norm! %
         let col_end_url = col('.')
         if pos[2] >= col_start_link && pos[2] <= col_end_url
-            let url = matchstr(line, '\%'.(col_start_url+1).'c.*\%'.col_end_url.'c')
+            let url = matchstr(line, '\%'..(col_start_url+1)..'c.*\%'..col_end_url..'c')
             break
         endif
         let g += 1
@@ -128,7 +135,7 @@ fu! s:get_url_markdown_style(arg) abort "{{{2
     let col_start_url = a:arg.col_start_url
     let col_end_url = a:arg.col_end_url
     " [text](link)
-    if matchstr(line, '\%'.col_start_url.'c.') is# '('
+    if matchstr(line, '\%'..col_start_url..'c.') is# '('
         " This is [an example](http://example.com/ "Title") inline link.
         let url = substitute(url, '\s*".\{-}"\s*$', '', '')
 
@@ -137,17 +144,17 @@ fu! s:get_url_markdown_style(arg) abort "{{{2
         " Visit [Daring Fireball][] for more information.
         " [Daring Fireball]: http://daringfireball.net/
         if url is# ''
-            let ref = matchstr(line, '\%'.(col_start_link+1).'c.*\%'.(col_start_url-1).'c')
+            let ref = matchstr(line, '\%'..(col_start_link+1)..'c.*\%'..(col_start_url-1)..'c')
         else
             let ref = url
         endif
         if &filetype is# 'markdown'
             let cml = ''
         else
-            let cml = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\m'
+            let cml = '\V'..matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*')..'\m'
         endif
         let url = filter(getline('.', '$'),
-            \ {_,v -> v =~# '^\s*'.cml.'\s*\c\V['.ref.']:'})
+            \ {_,v -> v =~# '^\s*'..cml..'\s*\c\V['..ref..']:'})
         let url = matchstr(get(url, 0, ''), '\[.\{-}\]:\s*\zs.*')
         " [foo]: http://example.com/  "Optional Title Here"
         " [foo]: http://example.com/  'Optional Title Here'
@@ -172,7 +179,7 @@ fu! s:get_url_regular() abort "{{{2
     " https://stackoverflow.com/a/13500078
 
     " remove everything before the first `http`, `ftp` or `www`
-    let url = substitute(url, '.\{-}\ze'.pat, '', '')
+    let url = substitute(url, '.\{-}\ze'..pat, '', '')
 
     " remove everything after the first `⟩`, `>`, `)`, `]`, `}`, backtick
     " but some wikipedia links contain parentheses:{{{
@@ -183,7 +190,7 @@ fu! s:get_url_regular() abort "{{{2
     " text after the closing parenthesis.
     "}}}
     let chars = match(url, '(') ==# -1 ? '[]⟩>)}`]' : '[]⟩>}`]'
-    let url = substitute(url, '\v.{-}\zs' . chars . '.*', '', '')
+    let url = substitute(url, '\v.{-}\zs'..chars..'.*', '', '')
 
     " remove everything after the last `"`
     let url = substitute(url, '\v".*', '', '')
@@ -199,8 +206,8 @@ fu! s:get_url_vim_plug() abort "{{{2
     if uri !~ 'github.com'
         return ''
     endif
-    let repo = matchstr(uri, '[^:/]*/'.name)
-    return empty(sha) ? 'https://github.com/'.repo
+    let repo = matchstr(uri, '[^:/]*/'..name)
+    return empty(sha) ? 'https://github.com/'..repo
         \ : printf('https://github.com/%s/commit/%s', repo, sha)
 endfu
 
