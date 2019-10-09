@@ -21,7 +21,7 @@ fu! gx#open(in_term, ...) abort "{{{2
     endif
 
     " [some book](~/Dropbox/ebooks/Later/Algo To Live By.pdf)
-    if match(url, '^\%(https\=\|ftps\=\|www\)://') ==# -1
+    if match(url, '^\%(https\=\|ftps\=\|www\)://') == -1
         " Don't use `expand()`!{{{
         "
         " We don't want something like `#anchor` to be replaced with the path to
@@ -95,7 +95,7 @@ fu! s:get_url() abort "{{{2
     let pos = getcurpos()
     " [text](link)
     let pat = '!\=\[.\{-}\]'
-    let pat .= '\%((.\{-})\|\[.\{-}\]\)'
+    let pat ..= '\%((.\{-})\|\[.\{-}\]\)'
     let g = 0
     norm! 1|
     let flags = 'cW'
@@ -160,7 +160,7 @@ fu! s:get_url_markdown_style(arg) abort "{{{2
         " [foo]: http://example.com/  'Optional Title Here'
         " [foo]: http://example.com/  (Optional Title Here)
         let pat = '\s\+\(["'']\).\{-}\1\s*$'
-        let pat .= '\|\s\+(.\{-})\s*$'
+        let pat ..= '\|\s\+(.\{-})\s*$'
         let url = substitute(url, pat, '', '')
         " [id]: <http://example.com/>  "Optional Title Here"
         let url = substitute(url, '^<\|>$', '', 'g')
@@ -189,7 +189,7 @@ fu! s:get_url_regular() abort "{{{2
     " In those cases,  we need to make an exception,  and not remove the
     " text after the closing parenthesis.
     "}}}
-    let chars = match(url, '(') ==# -1 ? '[]⟩>)}`]' : '[]⟩>}`]'
+    let chars = match(url, '(') == -1 ? '[]⟩>)}`]' : '[]⟩>}`]'
     let url = substitute(url, '\v.{-}\zs'..chars..'.*', '', '')
 
     " remove everything after the last `"`
