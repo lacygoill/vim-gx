@@ -6,7 +6,7 @@ let g:autoloaded_gx = 1
 let s:DIR = getenv('XDG_RUNTIME_VIM') == v:null ? '/tmp' : $XDG_RUNTIME_VIM
 
 " Interface {{{1
-fu! gx#open(in_term, ...) abort "{{{2
+fu gx#open(in_term, ...) abort "{{{2
     if a:0
         let z_save = [getreg('z'), getregtype('z')]
         norm! gv"zy
@@ -85,7 +85,7 @@ fu! gx#open(in_term, ...) abort "{{{2
 endfu
 " }}}1
 " Core {{{1
-fu! s:get_url() abort "{{{2
+fu s:get_url() abort "{{{2
     " https://github.com/junegunn/vim-plug/wiki/extra
     if &filetype is# 'vim-plug'
         return s:get_url_vim_plug()
@@ -128,7 +128,7 @@ fu! s:get_url() abort "{{{2
     endif
 endfu
 
-fu! s:get_url_markdown_style(arg) abort "{{{2
+fu s:get_url_markdown_style(arg) abort "{{{2
     let line = a:arg.line
     let url = a:arg.url
     let col_start_link = a:arg.col_start_link
@@ -168,7 +168,7 @@ fu! s:get_url_markdown_style(arg) abort "{{{2
     return url
 endfu
 
-fu! s:get_url_regular() abort "{{{2
+fu s:get_url_regular() abort "{{{2
     let url = expand('<cWORD>')
     let pat = '\%(https\=\|ftps\=\|www\)://'
     if url !~# pat
@@ -197,7 +197,7 @@ fu! s:get_url_regular() abort "{{{2
     return url
 endfu
 
-fu! s:get_url_vim_plug() abort "{{{2
+fu s:get_url_vim_plug() abort "{{{2
     let line = getline('.')
     let sha  = matchstr(line, '^  \X*\zs\x\{7}\ze ')
     let name = empty(sha) ? matchstr(line, '^[-x+] \zs[^:]\+\ze:')
