@@ -163,7 +163,7 @@ fu s:get_url_markdown_style(arg) abort "{{{2
         let pat ..= '\|\s\+(.\{-})\s*$'
         let url = substitute(url, pat, '', '')
         " [id]: <http://example.com/>  "Optional Title Here"
-        let url = substitute(url, '^<\|>$', '', 'g')
+        let url = trim(url, '<>')
     endif
     return url
 endfu
