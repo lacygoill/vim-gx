@@ -9,14 +9,14 @@ let g:loaded_gx = 1
 
 " So, I implement my own solution.
 
-nno  <silent><unique>  gx  :<c-u>call gx#open(0)<cr>
-xno  <silent><unique>  gx  :<c-u>call gx#open(0, 'vis')<cr>
+nno <silent><unique> gx :<c-u>call gx#open(0)<cr>
+xno <silent><unique> gx :<c-u>call gx#open(0, 'vis')<cr>
 
 " Also, install a `gX` mapping opening the url under the cursor in `w3m` inside
 " a Tmux pane.
 " Idea:
 " We  could  use  `gx`  for  the  two mappings,  and  make  the  function  react
 " differently depending on `v:count`.
-nno  <silent><unique>  gX  :<c-u>call gx#open(1)<cr>
-xno  <silent><unique>  gX  :<c-u>call gx#open(1, 'vis')<cr>
+nno <silent><unique> gX :<c-u>call gx#open(1)<cr>
+xno <silent><unique> gX :<c-u>call gx#open(1, 'vis')<cr>
 
