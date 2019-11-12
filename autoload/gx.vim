@@ -16,9 +16,7 @@ fu gx#open(in_term, ...) abort "{{{2
         let url = s:get_url()
     endif
 
-    if empty(url)
-        return
-    endif
+    if empty(url) | return | endif
 
     " [some book](~/Dropbox/ebooks/Later/Algo To Live By.pdf)
     if match(url, '^\%(https\=\|ftps\=\|www\)://') == -1
@@ -112,7 +110,42 @@ fu s:get_url() abort "{{{2
         let g += 1
         let flags = 'W'
     endwhile
-    call setpos('.', pos)
+    " TODO: Why do we need to `:redraw`?{{{
+    "
+    " MWE: Run `:VimPatches 8.1`.
+    "
+    " Then press:
+    "
+    "     G
+    "     $
+    "     gx
+    "
+    " Without `:redraw`, notice how the cursor seems to jump far away, for a few seconds.
+    "
+    " Simplified MWE:
+    "
+    "     $ vim -Nu <(cat <<'EOF'
+    "     nno gx :call Func()<cr>
+    "     fu Func()
+    "         let pos = getcurpos()
+    "         norm! 1|
+    "         call setpos('.', pos)
+    "     endfu
+    "     syn match xUrl /\S\+/ contained skipwhite
+    "     syn region xLinkText matchgroup=xLinkTextDelimiter start=/!\=\[\%(\_[^]]*] \=[[(]\)\@=/ end=/\]\%( \=[[(]\)\@=/ nextgroup=xLink keepend concealends skipwhite
+    "     syn region xLink matchgroup=xLinkDelimiter start=/(/ end=/)/ contained keepend conceal contains=xUrl
+    "     setl cole=3 cocu=nc
+    "     set nowrap
+    "     set sidescrolloff=3
+    "     set sidescroll=5
+    "     EOF
+    "     ) /tmp/file
+    "
+    " Also, the issue is specific to Vim (not Nvim); why?
+    " Update: Nope. With this minimal vimrc, I can reproduce in both.
+    " Why can't we reproduce in Nvim with all our config?
+    "}}}
+    call setpos('.', pos) | redraw
 
     if exists('url')
         let arg = {
