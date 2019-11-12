@@ -110,40 +110,40 @@ fu s:get_url() abort "{{{2
         let g += 1
         let flags = 'W'
     endwhile
-    " TODO: Why do we need to `:redraw`?{{{
+    " TODO: Remove `:redraw` if Vim github issue #5214 is fixed.{{{
     "
-    " MWE: Run `:VimPatches 8.1`.
-    "
+    " MWE: In Vim, run `:VimPatches 8.1`.
     " Then press:
     "
     "     G
     "     $
     "     gx
     "
-    " Without `:redraw`, notice how the cursor seems to jump far away, for a few seconds.
+    " Without `:redraw`, notice how the cursor seems to jump beyond the end of the line, for a few seconds.
     "
     " Simplified MWE:
     "
     "     $ vim -Nu <(cat <<'EOF'
     "     nno gx :call Func()<cr>
     "     fu Func()
-    "         let pos = getcurpos()
+    "         let col = col('.')
     "         norm! 1|
-    "         call setpos('.', pos)
+    "         call cursor(1, col)
     "     endfu
-    "     syn match xUrl /\S\+/ contained skipwhite
-    "     syn region xLinkText matchgroup=xLinkTextDelimiter start=/!\=\[\%(\_[^]]*] \=[[(]\)\@=/ end=/\]\%( \=[[(]\)\@=/ nextgroup=xLink keepend concealends skipwhite
-    "     syn region xLink matchgroup=xLinkDelimiter start=/(/ end=/)/ contained keepend conceal contains=xUrl
-    "     setl cole=3 cocu=nc
-    "     set nowrap
-    "     set sidescrolloff=3
-    "     set sidescroll=5
+    "     call matchadd('Conceal', '(.*)')
+    "     set cole=3 cocu=n nowrap
     "     EOF
-    "     ) /tmp/file
+    "     ) +"pu=repeat('x', &columns/2)..'('..repeat('y', &columns/2)..')z'"
     "
-    " Also, the issue is specific to Vim (not Nvim); why?
-    " Update: Nope. With this minimal vimrc, I can reproduce in both.
-    " Why can't we reproduce in Nvim with all our config?
+    " Note that the issue *seems* specific to  Vim, but that's due to an autocmd
+    " from `vim-readline`, which is similar to this:
+    "
+    "     au CmdlineEnter : call timer_start(0, {_ -> execute('')})
+    "
+    " Add it to the previous minimal vimrc, and you won't reproduce the issue in Nvim.
+    " Remove it, and you will reproduce.
+    "
+    " Note that the issue seems to disappear if you replace `norm! 1|` with `call cursor(1, 1)`.
     "}}}
     call setpos('.', pos) | redraw
 
