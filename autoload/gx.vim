@@ -110,40 +110,17 @@ fu s:get_url() abort "{{{2
         let g += 1
         let flags = 'W'
     endwhile
-    " TODO: Remove `:redraw` if Vim github issue #5214 is fixed.{{{
+    " TODO: Remove `:redraw` once 8.1.2303 has been ported to Nvim.{{{
     "
-    " MWE: In Vim, run `:VimPatches 8.1`.
-    " Then press:
-    "
-    "     G
-    "     $
-    "     gx
+    " MWE: In Nvim, run `:VimPatches 8.1`.
+    " Then press `$`.
     "
     " Without `:redraw`, notice how the cursor seems to jump beyond the end of the line, for a few seconds.
-    "
-    " Simplified MWE:
-    "
-    "     $ vim -Nu <(cat <<'EOF'
-    "     nno gx :call Func()<cr>
-    "     fu Func()
-    "         let col = col('.')
-    "         norm! 1|
-    "         call cursor(1, col)
-    "     endfu
-    "     call matchadd('Conceal', '(.*)')
-    "     set cole=3 cocu=n nowrap
-    "     EOF
-    "     ) +"pu=repeat('x', &columns/2)..'('..repeat('y', &columns/2)..')z'"
     "
     " Note that the issue *seems* specific to  Vim, but that's due to an autocmd
     " from `vim-readline`, which is similar to this:
     "
     "     au CmdlineEnter : call timer_start(0, {_ -> execute('')})
-    "
-    " Add it to the previous minimal vimrc, and you won't reproduce the issue in Nvim.
-    " Remove it, and you will reproduce.
-    "
-    " Note that the issue seems to disappear if you replace `norm! 1|` with `call cursor(1, 1)`.
     "}}}
     call setpos('.', pos) | redraw
 
