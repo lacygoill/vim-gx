@@ -57,7 +57,7 @@ fu gx#open(in_term, ...) abort "{{{2
             "     respawn-pane
             "     set-remain-on-exit
             "}}}
-            sil call system('tmux split-window -c '..s:DIR)
+            sil call system('tmux split-window -c '..shellescape(s:DIR))
             " maximize the pane
             sil call system('tmux resize-pane -Z')
             " start `w3m`
