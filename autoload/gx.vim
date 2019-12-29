@@ -193,17 +193,16 @@ fu s:get_url_regular() abort "{{{2
 
     " remove everything after the first `⟩`, `>`, `)`, `]`, `}`, backtick
     " but some wikipedia links contain parentheses:{{{
-    "
-    "         https://en.wikipedia.org/wiki/Daemon_(computing)
+    " https://en.wikipedia.org/wiki/Daemon_(computing)
     "
     " In those cases,  we need to make an exception,  and not remove the
     " text after the closing parenthesis.
     "}}}
     let chars = match(url, '(') == -1 ? '[]⟩>)}`]' : '[]⟩>}`]'
-    let url = substitute(url, '\v.{-}\zs'..chars..'.*', '', '')
+    let url = substitute(url, '.\{-}\zs'..chars..'.*', '', '')
 
     " remove everything after the last `"`
-    let url = substitute(url, '\v".*', '', '')
+    let url = substitute(url, '".*', '', '')
     return url
 endfu
 
