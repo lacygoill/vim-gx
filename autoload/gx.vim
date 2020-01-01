@@ -161,7 +161,7 @@ fu s:get_url_markdown_style(arg) abort "{{{2
         if &filetype is# 'markdown'
             let cml = ''
         else
-            let cml = '\V'..matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*')..'\m'
+            let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
         endif
         let url = filter(getline('.', '$'),
             \ {_,v -> v =~# '^\s*'..cml..'\s*\c\V['..ref..']:'})
