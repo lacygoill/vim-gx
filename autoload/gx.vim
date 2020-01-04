@@ -94,10 +94,9 @@ fu s:get_url() abort "{{{2
     " [text](link)
     let pat = '!\=\[.\{-}\]'
     let pat ..= '\%((.\{-})\|\[.\{-}\]\)'
-    let g = 0
     norm! 1|
     let flags = 'cW'
-    while search(pat, flags, line('.')) && g < 100
+    let g = 0 | while search(pat, flags, line('.')) && g < 100 | let g += 1
         let col_start_link = col('.')
         norm! %l
         let col_start_url = col('.')
@@ -107,7 +106,6 @@ fu s:get_url() abort "{{{2
             let url = matchstr(line, '\%'..(col_start_url+1)..'c.*\%'..col_end_url..'c')
             break
         endif
-        let g += 1
         let flags = 'W'
     endwhile
     " TODO: Remove `:redraw` once 8.1.2303 has been ported to Nvim.{{{
@@ -210,7 +208,7 @@ fu s:get_url_vim_plug() abort "{{{2
     let line = getline('.')
     let sha  = matchstr(line, '^  \X*\zs\x\{7}\ze ')
     let name = empty(sha) ? matchstr(line, '^[-x+] \zs[^:]\+\ze:')
-    \ : getline(search('^- .*:$', 'bn'))[2:-2]
+        \ : getline(search('^- .*:$', 'bn'))[2:-2]
     let uri  = get(get(g:plugs, name, {}), 'uri', '')
     if uri !~ 'github.com'
         return ''
