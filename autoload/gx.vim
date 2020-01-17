@@ -179,9 +179,7 @@ endfu
 fu s:get_url_regular() abort "{{{2
     let url = expand('<cWORD>')
     let pat = '\%(https\=\|ftps\=\|www\)://'
-    if url !~# pat
-        return ''
-    endif
+    if url !~# pat | return '' | endif
 
     " Which characters make a URL invalid?
     " https://stackoverflow.com/a/13500078
