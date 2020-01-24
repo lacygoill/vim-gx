@@ -118,7 +118,7 @@ fu s:get_url() abort "{{{2
     " Note that the issue *seems* specific to  Vim, but that's due to an autocmd
     " from `vim-readline`, which is similar to this:
     "
-    "     au CmdlineEnter : call timer_start(0, {_ -> execute('')})
+    "     au CmdlineEnter : call timer_start(0, {-> execute('')})
     "}}}
     call setpos('.', pos) | redraw
 
