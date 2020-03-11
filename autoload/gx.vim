@@ -177,7 +177,7 @@ fu s:get_url_markdown_style(arg) abort "{{{2
 endfu
 
 fu s:get_url_regular() abort "{{{2
-    let url = expand('<cWORD>')
+    let url = expand('<cfile>')
     let pat = '\%(https\=\|ftps\=\|www\)://'
     if url !~# pat | return '' | endif
 
