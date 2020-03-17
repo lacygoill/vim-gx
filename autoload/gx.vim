@@ -177,7 +177,19 @@ fu s:get_url_markdown_style(arg) abort "{{{2
 endfu
 
 fu s:get_url_regular() abort "{{{2
-    let url = expand('<cfile>')
+    " Do *not* use `<cfile>`.{{{
+    "
+    " Sometimes, it wouldn't handle some urls correctly.
+    "
+    "     https://www.youtube.com/watch?v=F91VWOelFNE&t=174s
+    "                                  ├────────────┘├─────┘
+    "                                  │             └ when the cursor is somewhere here,
+    "                                  │               expand('<cfile>') is t=174s
+    "                                  │
+    "                                  └ when the cursor is somewhere here,
+    "                                    expand('<cfile>') is v=F91VWOelFNE
+    "}}}
+    let url = expand('<cWORD>')
     let pat = '\%(https\=\|ftps\=\|www\)://'
     if url !~# pat | return '' | endif
 
