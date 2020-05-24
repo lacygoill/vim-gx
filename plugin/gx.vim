@@ -13,7 +13,7 @@ nno <silent><unique> gx :<c-u>call gx#open(0)<cr>
 xno <silent><unique> gx :<c-u>call gx#open(0, 'vis')<cr>
 
 " Also, install a `gX` mapping opening the url under the cursor in `w3m` inside
-" a Tmux pane.
+" a tmux pane.
 " Idea:
 " We  could  use  `gx`  for  the  two mappings,  and  make  the  function  react
 " differently depending on `v:count`.
