@@ -110,8 +110,13 @@ fu s:get_url() abort "{{{2
     endwhile
     " TODO: Remove `:redraw` once 8.1.2303 has been ported to Nvim.{{{
     "
-    " MWE: In Nvim, run `:VimPatches 8.1`.
-    " Then press `$`.
+    " MWE:
+    "
+    "     $ nvim
+    "     :VimPatches 8.1
+    "     " move the cursor on a commit with a message long enough so that the line ends beyond the screen
+    "     " press:  gx
+    "     " press:  $
     "
     " Without `:redraw`, notice how the cursor seems to jump beyond the end of the line, for a few seconds.
     "
