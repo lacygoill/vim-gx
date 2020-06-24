@@ -8,10 +8,10 @@ let s:DIR = getenv('XDG_RUNTIME_VIM') == v:null ? '/tmp' : $XDG_RUNTIME_VIM
 " Interface {{{1
 fu gx#open(in_term, ...) abort "{{{2
     if a:0
-        let z_save = [getreg('z'), getregtype('z')]
-        norm! gv"zy
-        let url = @z
-        call setreg('z', z_save[0], z_save[1])
+        let reg_save = getreginfo('"')
+        norm! gvy
+        let url = @"
+        call setreg('"', reg_save)
     else
         let url = s:get_url()
     endif
