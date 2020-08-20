@@ -47,8 +47,8 @@ fu gx#open(in_term, ...) abort "{{{2
             " Because by default, tmux closes  a window/pane whose shell command
             " has completed:
             "
-            " >     When the shell command completes, the window closes.
-            " >     See the remain-on-exit option to change this behaviour.
+            "    > When the shell command completes, the window closes.
+            "    > See the remain-on-exit option to change this behaviour.
             "
             " For more info, see `man tmux`, and search:
             "
