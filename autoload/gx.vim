@@ -22,7 +22,7 @@ fu gx#open(in_term, ...) abort "{{{2
     if match(url, '^\%(https\=\|ftps\=\|www\)://') == -1
         " Don't use `expand()`!{{{
         "
-        " We don't want something like `#anchor` to be replaced with the path to
+        " We don't want  something like `#anchor` to be replaced  by the path to
         " the alternate file.
         "
         " We could also do sth like:
