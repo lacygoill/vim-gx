@@ -3,7 +3,7 @@ if exists('g:autoloaded_gx')
 endif
 let g:autoloaded_gx = 1
 
-let s:DIR = getenv('XDG_RUNTIME_VIM') == v:null ? '/tmp' : $XDG_RUNTIME_VIM
+let s:DIR = getenv('XDG_RUNTIME_VIM') ?? '/tmp'
 
 " Interface {{{1
 fu gx#open(in_term, ...) abort "{{{2
