@@ -205,7 +205,7 @@ fu s:get_url_vim_plug() abort "{{{2
     let line = getline('.')
     let sha = matchstr(line, '^  \X*\zs\x\{7}\ze ')
     let name = empty(sha) ? matchstr(line, '^[-x+] \zs[^:]\+\ze:')
-        \ : search('^- .*:$', 'bn')->getline()[2:-2]
+        \ : search('^- .*:$', 'bn')->getline()[2 : -2]
     let uri = get(g:plugs, name, {})->get('uri', '')
     if uri !~ 'github.com'
         return ''
