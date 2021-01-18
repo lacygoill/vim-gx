@@ -1,22 +1,22 @@
-if exists('g:loaded_gx')
-    finish
-endif
-let g:loaded_gx = 1
+vim9 noclear
 
-" The default `gx` command, installed by the netrw plugin, doesn't open a link
-" correctly when it's inside a man page.
-" Ex:  :Man zsh  →  http://sourceforge.net/projects/zsh/
+if exists('loaded') | finish | endif
+var loaded = true
 
-" So, I implement my own solution.
+# The default `gx` command, installed by the netrw plugin, doesn't open a link
+# correctly when it's inside a man page.
+# Ex:  :Man zsh  →  http://sourceforge.net/projects/zsh/
 
-nno <unique> gx <cmd>call gx#open(0)<cr>
-xno <unique> gx <c-\><c-n><cmd>call gx#open(0, 'vis')<cr>
+# So, I implement my own solution.
 
-" Also, install a `gX` mapping opening the url under the cursor in `w3m` inside
-" a tmux pane.
-" Idea:
-" We  could  use  `gx`  for  the  two mappings,  and  make  the  function  react
-" differently depending on `v:count`.
-nno <unique> gX <cmd>call gx#open(1)<cr>
-xno <unique> gX <c-\><c-n><cmd>call gx#open(1, 'vis')<cr>
+nno <unique> gx <cmd>call gx#open()<cr>
+xno <unique> gx <c-\><c-n><cmd>call gx#open()<cr>
+
+# Also, install a `gX` mapping opening the url under the cursor in `w3m` inside
+# a tmux pane.
+# Idea:
+# We  could  use  `gx`  for  the  two mappings,  and  make  the  function  react
+# differently depending on `v:count`.
+nno <unique> gX <cmd>call gx#open(v:true)<cr>
+xno <unique> gX <c-\><c-n><cmd>call gx#open(v:true)<cr>
 
