@@ -60,7 +60,7 @@ def gx#open(in_term = false) #{{{2
             #     respawn-pane
             #     set-remain-on-exit
             #}}}
-            sil system('tmux split-window -c ' .. shellescape(s:DIR))
+            sil system('tmux split-window -c ' .. shellescape(DIR))
             # maximize the pane
             sil system('tmux resize-pane -Z')
             # start `w3m`
@@ -103,7 +103,7 @@ def GetUrl(): string #{{{2
         .. '\%((.\{-})\|\[.\{-}\]\)'
     norm! 1|
     var flags: string = 'cW'
-    var g: number = 0 | while search(pat, flags, line('.')) != 0 && g < 100 | g += 1
+    var g: number = 0 | while search(pat, flags, line('.')) > 0 && g < 100 | g += 1
         col_start_link = col('.')
         norm! %l
         col_start_url = col('.')
