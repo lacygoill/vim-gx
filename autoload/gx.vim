@@ -43,7 +43,7 @@ def gx#open(in_term = false) #{{{2
         endif
         var ext: string = fnamemodify(url, ':e')
         var cmd: string = get({pdf: 'zathura'}, ext, 'xdg-open')
-        if cmd == 'zathura'
+        if cmd == 'zathura' && pagenr > 0
             cmd ..= ' --page=' .. pagenr
         endif
         cmd ..= ' ' .. shellescape(url) .. ' &'
