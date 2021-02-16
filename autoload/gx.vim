@@ -21,8 +21,9 @@ def gx#open(in_term = false) #{{{2
         return
     endif
 
-    # [some book](~/Dropbox/ebooks/Later/Algo To Live By.pdf)
+    # [some book](~/Dropbox/ebooks/Later/Algo To Live By.pdf#page=123)
     if match(url, '^\%(https\=\|ftps\=\|www\)://') == -1
+        var pagenr: number = matchstr(url, '#page=\zs\d\+$')->str2nr()
         # Don't use `expand()`!{{{
         #
         # We don't want  something like `#anchor` to be replaced  by the path to
@@ -34,13 +35,18 @@ def gx#open(in_term = false) #{{{2
         #
         # Not sure whether it's totally equivalent though...
         #}}}
-        url = substitute(url, '^\~', $HOME, '')
+        url = url
+            ->substitute('^\~', $HOME, '')
+            ->substitute('#page=\d\+$', '', '')
         if !filereadable(url)
             return
         endif
         var ext: string = fnamemodify(url, ':e')
         var cmd: string = get({pdf: 'zathura'}, ext, 'xdg-open')
-            .. ' ' .. shellescape(url) .. ' &'
+        if cmd == 'zathura'
+            cmd ..= ' --page=' .. pagenr
+        endif
+        cmd ..= ' ' .. shellescape(url) .. ' &'
         sil system(cmd)
     else
         if in_term
