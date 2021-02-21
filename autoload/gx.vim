@@ -167,7 +167,7 @@ def GetUrlMarkdownStyle(arg: dict<any>): string #{{{2
             cml = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
         endif
         url = getline('.', '$')
-            ->filter((_, v) => v =~ '^\s*' .. cml .. '\s*\c\V[' .. ref .. ']:')
+            ->filter((_, v: string): bool => v =~ '^\s*' .. cml .. '\s*\c\V[' .. ref .. ']:')
             ->get(0, '')
             ->matchstr('\[.\{-}\]:\s*\zs.*')
         # [foo]: http://example.com/  "Optional Title Here"
