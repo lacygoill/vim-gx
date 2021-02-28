@@ -187,13 +187,13 @@ def GetUrlRegular(): string #{{{2
     #
     # Sometimes, it wouldn't handle some urls correctly.
     #
-    #     https://www.youtube.com/watch?v=F91VWOelFNE&t=174s
-    #                                  ├────────────┘├─────┘
+    #     https://www.youtube.com/watch?v=InAaCKqUmjE&t=90s
+    #                                  ├────────────┘├────┘
     #                                  │             └ when the cursor is somewhere here,
-    #                                  │               expand('<cfile>') is t=174s
+    #                                  │               expand('<cfile>') is t=90s
     #                                  │
     #                                  └ when the cursor is somewhere here,
-    #                                    expand('<cfile>') is v=F91VWOelFNE
+    #                                    expand('<cfile>') is v=InAaCKqUmjE
     #}}}
     var url: string = expand('<cWORD>')
     var pat: string = '\%(https\=\|ftps\=\|www\)://'
