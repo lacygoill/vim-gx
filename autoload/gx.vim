@@ -147,7 +147,7 @@ def GetUrlMarkdownStyle(arg: dict<any>): string #{{{2
     # [text](link)
     if matchstr(line, '\%' .. col_start_url .. 'c.') == '('
         # This is [an example](http://example.com/ "Title") inline link.
-        url = substitute(url, '\s*".\{-}"\s*$', '', '')
+        url = url->substitute('\s*".\{-}"\s*$', '', '')
 
     # [text][ref]
     else
@@ -167,15 +167,17 @@ def GetUrlMarkdownStyle(arg: dict<any>): string #{{{2
             cml = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
         endif
         url = getline('.', '$')
-            ->filter((_, v: string): bool => v =~ '^\s*' .. cml .. '\s*\c\V[' .. ref .. ']:')
-            ->get(0, '')
+            ->filter((_, v: string): bool =>
+                v =~ '^\s*' .. cml .. '\s*\c\V[' .. ref .. ']:'
+            )->get(0, '')
             ->matchstr('\[.\{-}\]:\s*\zs.*')
         # [foo]: http://example.com/  "Optional Title Here"
         # [foo]: http://example.com/  'Optional Title Here'
         # [foo]: http://example.com/  (Optional Title Here)
         var pat: string = '\s\+\(["'']\).\{-}\1\s*$'
             .. '\|\s\+(.\{-})\s*$'
-        url = substitute(url, pat, '', '')
+        url = url
+            ->substitute(pat, '', '')
             # [id]: <http://example.com/>  "Optional Title Here"
             ->trim('<>')
     endif
@@ -205,7 +207,7 @@ def GetUrlRegular(): string #{{{2
     # https://stackoverflow.com/a/13500078
 
     # remove everything before the first `http`, `ftp` or `www`
-    url = substitute(url, '.\{-}\ze' .. pat, '', '')
+    url = url->substitute('.\{-}\ze' .. pat, '', '')
 
     # remove everything after the first `⟩`, `>`, `)`, `]`, `}`, backtick
     # but some wikipedia links contain parentheses:{{{
@@ -218,7 +220,8 @@ def GetUrlRegular(): string #{{{2
         ? '[]⟩>)}`]'
         : '[]⟩>}`]'
 
-    return substitute(url, '.\{-}\zs' .. chars .. '.*', '', '')
+    return url
+        ->substitute('.\{-}\zs' .. chars .. '.*', '', '')
         # remove everything after the last `"`
         ->substitute('".*', '', '')
 enddef
