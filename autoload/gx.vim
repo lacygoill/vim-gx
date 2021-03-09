@@ -104,20 +104,21 @@ def GetUrl(): string #{{{2
     var col_end_url: number
     var line: string = getline('.')
     var pos: list<number> = getcurpos()
-    # [text](link)
-    var pat: string = '!\=\[.\{-}\]'
-        .. '\%((.\{-})\|\[.\{-}\]\)'
-    norm! 1|
+    # [link](url)
+    var pat: string = '!\=\[.\{-}\]' .. '\%((.\{-})\|\[.\{-}\]\)'
+    norm! 0
     var flags: string = 'cW'
-    var g: number = 0 | while search(pat, flags, line('.')) > 0 && g < 100 | g += 1
+    var curlnum: number = line('.')
+    var g: number = 0 | while search(pat, flags, curlnum) > 0 && g < 100 | g += 1
         col_start_link = col('.')
         norm! %l
         col_start_url = col('.')
         norm! %
         col_end_url = col('.')
         if pos[2] >= col_start_link && pos[2] <= col_end_url
-            url = matchstr(line,
-                '\%' .. (col_start_url + 1) .. 'c.*\%' .. col_end_url .. 'c')
+            var idx1: number = charidx(line, col_start_url + 1)
+            var idx2: number = charidx(line, col_end_url)
+            url = line[idx1 - 1 : idx2 - 1]
             break
         endif
         flags = 'W'
@@ -145,15 +146,15 @@ def GetUrlMarkdownStyle(arg: dict<any>): string #{{{2
     var col_start_url: number = arg.col_start_url
     var col_end_url: number = arg.col_end_url
     # [text](link)
-    if matchstr(line, '\%' .. col_start_url .. 'c.') == '('
+    if strpart(line, col_start_url - 1)[0] == '('
         # This is [an example](http://example.com/ "Title") inline link.
         url = url->substitute('\s*".\{-}"\s*$', '', '')
 
     # [text][ref]
     else
         var ref: string
-        # Visit [Daring Fireball][] for more information.
-        # [Daring Fireball]: http://daringfireball.net/
+        # Visit [Daring Fireball][id] for more information.
+        # [id]: https://daringfireball.net/projects/markdown/syntax#link
         if url == ''
             ref = matchstr(line,
                 '\%' .. (col_start_link + 1) .. 'c.*\%' .. (col_start_url - 1) .. 'c')
