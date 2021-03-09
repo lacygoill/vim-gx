@@ -117,7 +117,8 @@ def GetUrl(): string #{{{2
         col_end_url = col('.')
         if pos[2] >= col_start_link && pos[2] <= col_end_url
             var idx1: number = charidx(line, col_start_url + 1)
-            var idx2: number = charidx(line, col_end_url)
+            # `-1` to ignore the closing paren
+            var idx2: number = charidx(line, col_end_url) - 1
             url = line[idx1 - 1 : idx2 - 1]
             break
         endif
