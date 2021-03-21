@@ -9,10 +9,14 @@ const DIR: string = getenv('XDG_RUNTIME_VIM') ?? '/tmp'
 def gx#open(in_term = false) #{{{2
     var url: string
     if mode() =~ "^[vV\<c-v>]$"
-        var reg_save: dict<any> = getreginfo('"')
-        norm! gvy
-        url = @"
-        setreg('"', reg_save)
+        var reg_save: list<dict<any>> = [getreginfo('0'), getreginfo('1')]
+        try
+            norm! gvy
+            url = @"
+        finally
+            setreg('0', reg_save[0])
+            setreg('"', reg_save[1])
+        endtry
     else
         url = GetUrl()
     endif
@@ -98,92 +102,94 @@ def GetUrl(): string #{{{2
         return GetUrlVimPlug()
     endif
 
-    var url: string
-    var col_start_link: number
-    var col_start_url: number
-    var col_end_url: number
+    var inside_brackets: string
+    var link_colstart: number
+    var brackets_colstart: number
+    var brackets_colend: number
     var line: string = getline('.')
     var pos: list<number> = getcurpos()
-    # [link](url)
-    var pat: string = '!\=\[.\{-}\]' .. '\%((.\{-})\|\[.\{-}\]\)'
+    # [link](url)  (or [link][id])
+    var pat: string = '!\=\[.\{-1,}\]' .. '\%((.\{-1,})\|\[.\{-1,}\]\)'
     norm! 0
     var flags: string = 'cW'
     var curlnum: number = line('.')
     var g: number = 0 | while search(pat, flags, curlnum) > 0 && g < 100 | g += 1
-        col_start_link = col('.')
-        norm! %l
-        col_start_url = col('.')
-        norm! %
-        col_end_url = col('.')
-        if pos[2] >= col_start_link && pos[2] <= col_end_url
-            var idx1: number = charidx(line, col_start_url + 1)
-            # `-1` to ignore the closing paren
-            var idx2: number = charidx(line, col_end_url) - 1
-            url = line[idx1 - 1 : idx2 - 1]
+        # [link](inside_brackets)
+        # ^
+        link_colstart = col('.')
+
+        norm! %ll
+        # [link](inside_brackets)
+        #        ^
+        brackets_colstart = col('.')
+
+        norm! h%h
+        # [link](inside_brackets)
+        #                      ^
+        brackets_colend = col('.')
+
+        if link_colstart <= pos[2] && pos[2] <= brackets_colend
+            var idx1: number = charidx(line, brackets_colstart - 1)
+            var idx2: number = charidx(line, brackets_colend - 1)
+            inside_brackets = line[idx1 : idx2]
             break
         endif
         flags = 'W'
     endwhile
     setpos('.', pos)
 
-    if url != ''
-        var arg: dict<any> = {
-            line: line,
-            url: url,
-            col_start_link: col_start_link,
-            col_start_url: col_start_url,
-            col_end_url: col_end_url,
-            }
-        return GetUrlMarkdownStyle(arg)
+    if inside_brackets != ''
+        return GetUrlMarkdownStyle(line, inside_brackets, brackets_colstart)
     else
         return GetUrlRegular()
     endif
 enddef
 
-def GetUrlMarkdownStyle(arg: dict<any>): string #{{{2
-    var line: string = arg.line
-    var url: string = arg.url
-    var col_start_link: number = arg.col_start_link
-    var col_start_url: number = arg.col_start_url
-    var col_end_url: number = arg.col_end_url
-    # [text](link)
-    if strpart(line, col_start_url - 1)[0] == '('
-        # This is [an example](http://example.com/ "Title") inline link.
-        url = url->substitute('\s*".\{-}"\s*$', '', '')
+def GetUrlMarkdownStyle( #{{{2
+    line: string,
+    inside_brackets: string,
+    brackets_colstart: number
+    ): string
 
-    # [text][ref]
+    # [link](inside_brackets){{{
+    #
+    #     This is [an example](http://example.com/ "Title") inline link.
+    #}}}
+    if strpart(line, brackets_colstart - 2)[0] == '('
+        return inside_brackets
+            ->substitute('\s*".\{-}"\s*$', '', '')
+
+    # [link][id]{{{
+    #
+    #     Visit [Daring Fireball][id] for more information.
+    #     [id]: https://daringfireball.net/projects/markdown/syntax#link
+    #}}}
     else
-        var ref: string
-        # Visit [Daring Fireball][id] for more information.
-        # [id]: https://daringfireball.net/projects/markdown/syntax#link
-        if url == ''
-            ref = matchstr(line,
-                '\%' .. (col_start_link + 1) .. 'c.*\%' .. (col_start_url - 1) .. 'c')
-        else
-            ref = url
-        endif
-        var cml: string
-        if &filetype == 'markdown'
-            cml = ''
-        else
-            cml = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
-        endif
-        url = getline('.', '$')
+        var cml: string = &filetype == 'markdown'
+            ?     ''
+            :     '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
+        var noise: string = '\s\+\(["'']\).\{-}\1\s*$'
+            .. '\|\s\+(.\{-})\s*$'
+
+        return getline('.', '$')
             ->filter((_, v: string): bool =>
-                v =~ '^\s*' .. cml .. '\s*\c\V[' .. ref .. ']:'
+                v =~ '^\s*' .. cml .. '\s*\c\V[' .. inside_brackets .. ']:'
             )->get(0, '')
             ->matchstr('\[.\{-}\]:\s*\zs.*')
-        # [foo]: http://example.com/  "Optional Title Here"
-        # [foo]: http://example.com/  'Optional Title Here'
-        # [foo]: http://example.com/  (Optional Title Here)
-        var pat: string = '\s\+\(["'']\).\{-}\1\s*$'
-            .. '\|\s\+(.\{-})\s*$'
-        url = url
-            ->substitute(pat, '', '')
-            # [id]: <http://example.com/>  "Optional Title Here"
+            # Remove possible noise:{{{
+            #
+            #     [id]: http://example.com/  "Optional Title Here"
+            #                              ^---------------------^
+            #     [id]: http://example.com/  'Optional Title Here'
+            #                              ^---------------------^
+            #     [id]: http://example.com/  (Optional Title Here)
+            #                              ^---------------------^
+            #     [id]: <http://example.com/>  "Optional Title Here"
+            #           ^                   ^
+            #}}}
+            ->substitute(noise, '', '')
             ->trim('<>')
     endif
-    return url
 enddef
 
 def GetUrlRegular(): string #{{{2
