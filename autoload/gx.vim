@@ -149,7 +149,7 @@ def GetUrlMarkdownStyle( #{{{2
     line: string,
     inside_brackets: string,
     brackets_colstart: number
-    ): string
+): string
 
     # [link](inside_brackets){{{
     #
