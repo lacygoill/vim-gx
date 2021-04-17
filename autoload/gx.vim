@@ -173,8 +173,8 @@ def GetUrlMarkdownStyle( #{{{2
 
         return getline('.', '$')
             ->filter((_, v: string): bool =>
-                v =~ '^\s*' .. cml .. '\s*\c\V[' .. inside_brackets .. ']:'
-            )->get(0, '')
+                v =~ '^\s*' .. cml .. '\s*\c\V[' .. inside_brackets .. ']:')
+            ->get(0, '')
             ->matchstr('\[.\{-}\]:\s*\zs.*')
             # Remove possible noise:{{{
             #
