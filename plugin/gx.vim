@@ -9,8 +9,10 @@ var loaded = true
 
 # So, I implement my own solution.
 
-nno <unique> gx <cmd>call gx#open()<cr>
-xno <unique> gx <c-\><c-n><cmd>call gx#open()<cr>
+# Don't add  `<unique>`; it could  raise spurious errors  when we debug  and for
+# some reason this plugin is sourced after netrw.
+nno gx <cmd>call gx#open()<cr>
+xno gx <c-\><c-n><cmd>call gx#open()<cr>
 
 # Also, install a `gX` mapping opening the url under the cursor in `w3m` inside
 # a tmux pane.

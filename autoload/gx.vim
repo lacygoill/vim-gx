@@ -27,7 +27,7 @@ def gx#open(in_term = false) #{{{2
 
     # [some book](~/Dropbox/ebooks/Later/Algo To Live By.pdf#page=123)
     if match(url, '^\%(https\=\|ftps\=\|www\)://') == -1
-        var pagenr: number = matchstr(url, '#page=\zs\d\+$')->str2nr()
+        var pagenr: number = url->matchstr('#page=\zs\d\+$')->str2nr()
         # Don't use `expand()`!{{{
         #
         # We don't want  something like `#anchor` to be replaced  by the path to
@@ -45,7 +45,7 @@ def gx#open(in_term = false) #{{{2
         if !filereadable(url)
             return
         endif
-        var ext: string = fnamemodify(url, ':e')
+        var ext: string = url->fnamemodify(':e')
         var cmd: string = get({pdf: 'zathura'}, ext, 'xdg-open')
         if cmd == 'zathura' && pagenr > 0
             cmd ..= ' --page=' .. pagenr
@@ -78,7 +78,7 @@ def gx#open(in_term = false) #{{{2
             #                               │{{{
             #                               └ without the backslash,
             #
-            # `tmux` would think  it's a space to separate the  arguments of the
+            # Tmux would  think it's a  space to  separate the arguments  of the
             # `send-keys` command; therefore, it would remove it and type:
             #
             #             weburl
@@ -97,11 +97,6 @@ enddef
 # }}}1
 # Core {{{1
 def GetUrl(): string #{{{2
-    # https://github.com/junegunn/vim-plug/wiki/extra
-    if &filetype == 'vim-plug'
-        return GetUrlVimPlug()
-    endif
-
     var inside_brackets: string
     var link_colstart: number
     var brackets_colstart: number
@@ -113,7 +108,7 @@ def GetUrl(): string #{{{2
     norm! 0
     var flags: string = 'cW'
     var curlnum: number = line('.')
-    var g: number = 0 | while search(pat, flags, curlnum) > 0 && g < 100 | g += 1
+    var g: number = 0 | while search(pat, flags, curlnum) > 0 && g < 100 | ++g
         # [link](inside_brackets)
         # ^
         link_colstart = col('.')
@@ -167,7 +162,7 @@ def GetUrlMarkdownStyle( #{{{2
     else
         var cml: string = &filetype == 'markdown'
             ?     ''
-            :     '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
+            :     '\V' .. &cms->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
         var noise: string = '\s\+\(["'']\).\{-}\1\s*$'
             .. '\|\s\+(.\{-})\s*$'
 
@@ -232,21 +227,5 @@ def GetUrlRegular(): string #{{{2
         ->substitute('.\{-}\zs' .. chars .. '.*', '', '')
         # remove everything after the last `"`
         ->substitute('".*', '', '')
-enddef
-
-def GetUrlVimPlug(): string #{{{2
-    var line: string = getline('.')
-    var sha: string = matchstr(line, '^  \X*\zs\x\{7}\ze ')
-    var name: string = empty(sha)
-        ?     matchstr(line, '^[-x+] \zs[^:]\+\ze:')
-        :     search('^- .*:$', 'bn')->getline()[2 : -2]
-    var uri: string = get(g:plugs, name, {})->get('uri', '')
-    if uri !~ 'github.com'
-        return ''
-    endif
-    var repo: string = matchstr(uri, '[^:/]*/' .. name)
-    return empty(sha)
-        ?     'https://github.com/' .. repo
-        :     printf('https://github.com/%s/commit/%s', repo, sha)
 enddef
 
