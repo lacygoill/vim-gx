@@ -162,7 +162,7 @@ def GetUrlMarkdownStyle( #{{{2
     else
         var cml: string = &filetype == 'markdown'
             ?     ''
-            :     '\V' .. &cms->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
+            :     '\V' .. &commentstring->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
         var noise: string = '\s\+\(["'']\).\{-}\1\s*$'
             .. '\|\s\+(.\{-})\s*$'
 
