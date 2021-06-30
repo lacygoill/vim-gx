@@ -8,10 +8,10 @@ const DIR: string = getenv('XDG_RUNTIME_VIM') ?? '/tmp'
 # Interface {{{1
 def gx#open(in_term = false) #{{{2
     var url: string
-    if mode() =~ "^[vV\<c-v>]$"
+    if mode() =~ "^[vV\<C-V>]$"
         var reg_save: list<dict<any>> = [getreginfo('0'), getreginfo('1')]
         try
-            norm! gvy
+            normal! gvy
             url = @"
         finally
             setreg('0', reg_save[0])
@@ -51,7 +51,7 @@ def gx#open(in_term = false) #{{{2
             cmd ..= ' --page=' .. pagenr
         endif
         cmd ..= ' ' .. shellescape(url) .. ' &'
-        sil system(cmd)
+        silent system(cmd)
     else
         if in_term
             # Could we pass the shell command to `$ tmux split-window` directly?{{{
@@ -70,13 +70,13 @@ def gx#open(in_term = false) #{{{2
             #     respawn-pane
             #     set-remain-on-exit
             #}}}
-            sil system('tmux split-window -c ' .. shellescape(DIR))
+            silent system('tmux split-window -c ' .. shellescape(DIR))
             # maximize the pane
-            sil system('tmux resize-pane -Z')
+            silent system('tmux resize-pane -Z')
             # start `w3m`
-            sil system('tmux send-keys web \ ' .. shellescape(url) .. ' Enter')
-            #                               │{{{
-            #                               └ without the backslash,
+            silent system('tmux send-keys web \ ' .. shellescape(url) .. ' Enter')
+            #                                  │{{{
+            #                                  └ without the backslash,
             #
             # Tmux would  think it's a  space to  separate the arguments  of the
             # `send-keys` command; therefore, it would remove it and type:
@@ -90,7 +90,7 @@ def gx#open(in_term = false) #{{{2
             # The backslash is there to tell it's a semantic space.
             #}}}
         else
-            sil system('xdg-open ' .. shellescape(url))
+            silent system('xdg-open ' .. shellescape(url))
         endif
     endif
 enddef
@@ -105,7 +105,7 @@ def GetUrl(): string #{{{2
     var pos: list<number> = getcurpos()
     # [link](url)  (or [link][id])
     var pat: string = '!\=\[.\{-1,}\]' .. '\%((.\{-1,})\|\[.\{-1,}\]\)'
-    norm! 0
+    normal! 0
     var flags: string = 'cW'
     var curlnum: number = line('.')
     var g: number = 0 | while search(pat, flags, curlnum) > 0 && g < 100 | ++g
@@ -113,12 +113,12 @@ def GetUrl(): string #{{{2
         # ^
         link_colstart = col('.')
 
-        norm! %ll
+        normal! %ll
         # [link](inside_brackets)
         #        ^
         brackets_colstart = col('.')
 
-        norm! h%h
+        normal! h%h
         # [link](inside_brackets)
         #                      ^
         brackets_colend = col('.')

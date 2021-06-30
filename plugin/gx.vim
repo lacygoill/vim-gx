@@ -11,14 +11,14 @@ var loaded = true
 
 # Don't add  `<unique>`; it could  raise spurious errors  when we debug  and for
 # some reason this plugin is sourced after netrw.
-nno gx <cmd>call gx#open()<cr>
-xno gx <c-\><c-n><cmd>call gx#open()<cr>
+nnoremap gx <Cmd>call gx#open()<CR>
+xnoremap gx <C-\><C-N><Cmd>call gx#open()<CR>
 
 # Also, install a `gX` mapping opening the url under the cursor in `w3m` inside
 # a tmux pane.
 # Idea:
 # We  could  use  `gx`  for  the  two mappings,  and  make  the  function  react
 # differently depending on `v:count`.
-nno <unique> gX <cmd>call gx#open(v:true)<cr>
-xno <unique> gX <c-\><c-n><cmd>call gx#open(v:true)<cr>
+nnoremap <unique> gX <Cmd>call gx#open(v:true)<CR>
+xnoremap <unique> gX <C-\><C-N><Cmd>call gx#open(v:true)<CR>
 
