@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 const DIR: string = getenv('XDG_RUNTIME_VIM') ?? '/tmp'
 
 # Interface {{{1

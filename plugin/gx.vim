@@ -11,8 +11,8 @@ var loaded = true
 
 # Don't add  `<unique>`; it could  raise spurious errors  when we debug  and for
 # some reason this plugin is sourced after netrw.
-nnoremap gx <Cmd>call gx#open()<CR>
-xnoremap gx <C-\><C-N><Cmd>call gx#open()<CR>
+nnoremap <unique> gx <Cmd>call gx#open()<CR>
+xnoremap <unique> gx <C-\><C-N><Cmd>call gx#open()<CR>
 
 # Also, install a `gX` mapping opening the url under the cursor in `w3m` inside
 # a tmux pane.
